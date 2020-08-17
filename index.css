@@ -1,0 +1,16 @@
+#main-container {
+    padding-top: 80px;
+}
+
+.v-input--slider {
+    pointer-events: auto !important;
+}
+
+.tilgungsplan {
+    width: 800px;
+}
+
+.tilgungsplan__row {
+    display: flex;
+    justify-content: space-between;
+}

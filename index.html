@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de" data-ng-app="metropolisApp" data-ng-controller="appController">
+
+<head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Metropolis</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+<div id="app">
+    <v-app>
+        <v-content>
+            <v-container id="main-container" fluid>
+                <v-layout row wrap>
+                    <v-flex xs12 pa-3>
+                        <v-card>
+                            <v-toolbar card dense>
+                                <v-toolbar-title>
+                                    <span class="subheading">Eckdaten</span>
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-layout row wrap>
+                                    <v-flex xs6 pa-2>
+                                        <v-slider
+                                                v-model="kaufpreis"
+                                                label="Kaufpreis"
+                                                min="40000"
+                                                max="300000"
+                                                step="1000"
+                                                thumb-label="always"
+                                                thumb-size="50"
+                                                :hint="kaufpreis + ''"
+                                                persistent-hint
+                                        ></v-slider>
+                                    </v-flex>
+                                    <v-flex xs6 pa-2>
+                                        <v-slider
+                                                v-model="eigenkapital"
+                                                label="Eigenkapital"
+                                                min="0"
+                                                max="60000"
+                                                thumb-label="always"
+                                                thumb-size="40"
+                                                :hint="eigenkapital_hint"
+                                                persistent-hint
+                                        ></v-slider>
+                                    </v-flex>
+                                    <v-flex xs6 pa-2>
+                                        <v-slider
+                                                v-model="zinssatz"
+                                                label="Zinssatz"
+                                                min="0"
+                                                max="14"
+                                                step="0.01"
+                                                thumb-label="always"
+                                                thumb-size="40"
+                                                persistent-hint
+                                        ></v-slider>
+                                    </v-flex>
+                                    <v-flex xs6 pa-2>
+                                        <v-slider
+                                                v-model="sollzinsbindung"
+                                                label="Sollzinsbindung (Jahre)"
+                                                min="5"
+                                                max="35"
+                                                thumb-label="always"
+                                                thumb-size="40"
+                                                persistent-hint
+                                        ></v-slider>
+                                    </v-flex>
+                                    <v-flex xs6 pa-2><span
+                                            class="subheading">Darlehenssumme: {{darlehenssumme}} €</span></v-flex>
+                                </v-layout>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+
+                    <!-- Kaufnebenkosten -->
+                    <v-flex xs6 pa-3>
+                        <v-card>
+                            <v-toolbar card dense>
+                                <v-toolbar-title>
+                                    <span class="subheading">Kaufnebenkosten</span>
+                                </v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <span class="title">{{kaufnebenkosten}} €</span>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-slider
+                                        v-model="notarkosten"
+                                        label="Notar- und Grundbuchkosten"
+                                        min="0"
+                                        max="60000"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        :hint="notarkosten_hint"
+                                        persistent-hint
+                                ></v-slider>
+                                <v-slider
+                                        v-model="grunderwerbsteuer"
+                                        label="Grunderwerbsteuer"
+                                        min="0"
+                                        max="50000"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        :hint="grunderwerbsteuer_hint"
+                                        persistent-hint
+                                ></v-slider>
+                                <v-slider
+                                        v-model="maklerprovision"
+                                        label="Maklerprovision"
+                                        min="0"
+                                        max="30000"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        :hint="maklerprovision_hint"
+                                        persistent-hint
+                                ></v-slider>
+                                <v-slider
+                                        v-model="modernisierungskosten"
+                                        label="Kostem Umbau / Modernisierung"
+                                        min="0"
+                                        max="120000"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        persistent-hint
+                                ></v-slider>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+
+                    <!-- Tilgungsplan-->
+                    <v-flex xs6 pa-3>
+                        <v-card>
+                            <v-toolbar card dense>
+                                <v-toolbar-title>
+                                    <span class="subheading">{{tilgung_label}}</span>
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-slider
+                                        v-model="monatliche_rate"
+                                        label="Monatliche Rate"
+                                        min="0"
+                                        max="2000"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        @mousedown="setTilgungType('monatliche_rate')"
+                                        ref="slider_monatliche_rate"
+                                        persistent-hint
+                                ></v-slider>
+                                <span class="subheader">oder</span>
+                                <v-slider
+                                        v-model="tilgungssatz"
+                                        label="Tilgungssatz (%)"
+                                        min="1"
+                                        step="0.01"
+                                        max="10"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        persistent-hint
+                                        @mousedown="setTilgungType('tilgungssatz')"
+
+                                ></v-slider>
+                                <span class="subheader">oder</span>
+                                <v-slider
+                                        v-model="laufzeit_monate"
+                                        label="Laufzeit (Monate)"
+                                        min="12"
+                                        step="1"
+                                        max="600"
+                                        thumb-label="always"
+                                        thumb-size="40"
+                                        persistent-hint
+                                        @mousedown="setTilgungType('laufzeit_monate')"
+                                        :hint="laufzeit_label"
+
+                                ></v-slider>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                    <v-flex xs12 pa-3>
+                        <v-card>
+                            <v-toolbar card dense>
+                                <v-toolbar-title>
+                                    <span class="subheading">Ergebnis</span>
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+
+                                <v-subheader>Laufzeit: {{laufzeit_label}}</v-subheader>
+                                <v-subheader>Gezahlte Zinsen: {{gezahlte_zinsen.toFixed(2)}} €</v-subheader>
+                                <v-subheader>Getilgter Betrag: {{getilgt.toFixed(2)}} € (= Darlehenssumme)</v-subheader>
+                                <v-subheader>Insgesamt bezahlt: {{gezahlt_gesamt.toFixed(2)}} €</v-subheader>
+
+                                <!--<div class="tilgungsplan">
+                                    <div class="tilgungsplan__row tilgungsplan__head-row">
+                                        <div class="tilgungsplan__column-rate  tilgungsplan__head-column">Periode</div>
+                                        <div class="tilgungsplan__column-rate  tilgungsplan__head-column">Rate</div>
+                                        <div class="tilgungsplan__column-tilgung tilgungsplan__head-column">Tilgung
+                                        </div>
+                                        <div class="tilgungsplan__column-zinsen tilgungsplan__head-column">Zinsen</div>
+                                        <div class="tilgungsplan__column-restschuld tilgungsplan__head-column">
+                                            Restschuld
+                                        </div>
+                                    </div>
+                                    <div class="tilgungsplan__row" v-for="tilgungRow in tilgungsplan">
+                                        <div class="tilgungsplan__column-periode">{{tilgungRow.periode}}</div>
+                                        <div class="tilgungsplan__column-rate">{{tilgungRow.rate}}</div>
+                                        <div class="tilgungsplan__column-tilgung">{{tilgungRow.tilgung}}</div>
+                                        <div class="tilgungsplan__column-zinsen">{{tilgungRow.zinsen}}</div>
+                                        <div class="tilgungsplan__column-restschuld">{{tilgungRow.restschuld}}</div>
+                                    </div>
+                                </div>-->
+
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                </v-layout>
+            </v-container>
+        </v-content>
+    </v-app>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
